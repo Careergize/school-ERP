@@ -37,7 +37,7 @@ export default function ResourcePage({module,config,api,user,route,navigate,noti
     await api(config.endpoint+(editor.record?editor.record.id+'/':''),editor.record?'PUT':'POST',body);
     notify(`${config.singular} saved`);closeEditor();reload();onMutation();
   }
-  async function exportCSV(){setActionBusy(true);try{const blob=await api.download(config.export_endpoint);const href=URL.createObjectURL(blob);const link=document.createElement('a');link.href=href;link.download=module+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(href),1000);notify('CSV export downloaded');}catch(error){setError(error);}finally{setActionBusy(false);}}
+  async function exportCSV(){setActionBusy(true);try{const blob=await api.download(module==='fees'?queryPath(config.export_endpoint,{search:query,...filters}):config.export_endpoint);const href=URL.createObjectURL(blob);const link=document.createElement('a');link.href=href;link.download=module+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(href),1000);notify('CSV export downloaded');}catch(error){setError(error);}finally{setActionBusy(false);}}
   async function runAction(){
     setActionBusy(true);setError(null);
     try {
@@ -59,7 +59,7 @@ export default function ResourcePage({module,config,api,user,route,navigate,noti
     <div className="panel">
       <div className="list-toolbar"><h3>{config.label} <span className="count">{count}</span></h3><div className="toolbar-actions"><div className="search"><Search size={16}/><input aria-label={`Search ${config.label}`} value={search} placeholder="Search records…" onChange={event=>setSearch(event.target.value)}/></div><button className="icon-button" aria-label="Refresh records" disabled={loading} onClick={reload}><RefreshCw size={16}/></button></div></div>
       {!!screen.filters?.length&&<div className="filter-bar">{screen.filters.map(key=>{
-        const field=config.fields.find(field=>field.key===key);if(!field)return null;
+        const field=config.fields.find(field=>field.key===key)||(module==='fees'&&key==='class_id'?{key:'class_id',label:'Student class',type:'ref:classes'}:null);if(!field)return null;
         return <div key={key} className="filter"><label htmlFor={'filter-'+key}>{field.label}</label>{field.type.startsWith('ref:')?<ReferenceSelect id={'filter-'+key} module={field.type.slice(4)} value={filters[key]||''} onChange={value=>changeFilter(key,value)}/>:
           field.type==='select'?<select id={'filter-'+key} value={filters[key]||''} onChange={event=>changeFilter(key,event.target.value)}><option value="">All {field.label.toLowerCase()}</option>{field.options.map(option=><option key={option}>{option}</option>)}</select>:
           <input id={'filter-'+key} type={field.type} value={filters[key]||''} onChange={event=>changeFilter(key,event.target.value)}/>}</div>;

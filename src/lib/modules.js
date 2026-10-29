@@ -22,7 +22,7 @@ export const resourceScreens = {
   results: {description: 'Record evaluations and review student exam outcomes.', columns: ['student_id','exam_id','marks','percentage','outcome','remarks']},
   assignments: {description: 'Publish class assignments, instructions, and due dates.', columns: ['name','class_id','subject_id','due','description'], filters: ['class_id']},
   submissions: {description: 'Review student work and record teacher feedback.', columns: ['student_id','assignment_id','content','feedback']},
-  fees: {description: 'Issue invoices and track collected and outstanding fees.', columns: ['name','student_id','amount','paid_amount','balance','payment_status','due']},
+  fees: {description: 'Issue invoices and track collected and outstanding fees.', columns: ['name','student_id','amount','paid_amount','balance','payment_status','due'], filters: ['class_id']},
   payments: {description: 'Record cash, bank-transfer, or cheque receipts against invoices.', columns: ['invoice_id','amount','date','method','reference'], filters: ['method','date']},
   staff: {description: 'Manage faculty and staff contact, employment, and salary details.', columns: ['name','designation','department','email','salary','joined']},
   payroll: {description: 'Prepare monthly payroll with allowances and deductions.', columns: ['staff_id','month','basic','allowances','deductions','net_pay','status'], filters: ['status']},
