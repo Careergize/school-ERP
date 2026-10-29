@@ -1,6 +1,6 @@
 export const navigation = [
   ['Workspace', ['dashboard', 'admissions', 'students', 'parents', 'enrollments']],
-  ['Academics', ['courses', 'academic_years', 'classes', 'subjects', 'attendance', 'timetable', 'exams', 'results', 'assignments', 'submissions']],
+  ['Academics', ['improvement', 'courses', 'academic_years', 'classes', 'subjects', 'attendance', 'timetable', 'exams', 'results', 'assignments', 'submissions']],
   ['Finance & people', ['fees', 'payments', 'staff', 'payroll', 'reviews']],
   ['Campus services', ['books', 'loans', 'transport', 'transport_allocations', 'hostels', 'hostel_allocations', 'rooms', 'activities']],
   ['Communication', ['notices', 'messages']],

@@ -14,6 +14,7 @@ import Dashboard from './features/dashboard/Dashboard';
 import Reports from './features/reporting/Reports';
 import Audit from './features/reporting/Audit';
 import SettingsPage from './features/accounts/SettingsPage';
+import Improvement from './features/improvement/Improvement';
 
 function readRoute(){
   const [path,query='']=location.hash.replace(/^#\/?/,'').split('?');
@@ -49,19 +50,19 @@ function App(){
   if(!token)return <Login api={api} message={message} onLogin={result=>{sessionStorage.setItem('erp-token',result.token);setToken(result.token);setUser(result.user);setMessage('');}}/>;
   if(!catalog||!user)return <div className="boot-screen"><div className="brand"><GraduationCap/>schoolhouse</div>{error?<><ErrorNotice error={error}/><button className="primary" onClick={()=>setRetry(value=>value+1)}>Retry connection</button><button className="outline" onClick={()=>signOut()}>Back to sign in</button></>:<Loading text="Connecting to your school workspace…"/>}</div>;
   const config=catalog[route.page];const allowed=config?.can_read!==false;
-  const title=config?.label||{dashboard:'Overview',assistant:'School Assistant',reports:'Reports & analytics',audit:'Audit log',settings:'Account settings'}[route.page]||'Page not found';
-  const visible=page=>catalog[page]?catalog[page].can_read!==false:['dashboard','reports','settings','assistant'].includes(page)||(page==='audit'&&user.role==='admin');
+  const title=config?.label||{dashboard:'Overview',improvement:'Academic improvement',assistant:'School Assistant',reports:'Reports & analytics',audit:'Audit log',settings:'Account settings'}[route.page]||'Page not found';
+  const visible=page=>page==='improvement'?['admin','teacher','student','parent'].includes(user.role):catalog[page]?catalog[page].can_read!==false:['dashboard','reports','settings','assistant'].includes(page)||(page==='audit'&&user.role==='admin');
   return <ReferenceProvider api={api} catalog={catalog} revision={revision} navigate={navigate}><div className="shell">
     {nav&&<button className="nav-backdrop" aria-label="Close navigation" onClick={()=>setNav(false)}/>}
     <aside className={nav?'open':''}><div className="brand"><GraduationCap size={28}/>schoolhouse<span>ERP</span></div><div className="school"><div className="school-icon">{school?.name?.[0]||'S'}</div><div><b>{school?.name||'School workspace'}</b><small>{year||'Connected school management'}</small></div></div>
-      <nav aria-label="School modules">{navigation.map(([group,pages])=>{const items=pages.filter(visible);if(!items.length)return null;return <section key={group}><h6>{group}</h6>{items.map(page=>{const Icon=icons[page]||BookOpen;return <button key={page} className={route.page===page?'active':''} aria-current={route.page===page?'page':undefined} onClick={()=>navigate(page)}><Icon size={17}/>{catalog[page]?.label||{dashboard:'Overview',assistant:'School Assistant',reports:'Reports & analytics',audit:'Audit log',settings:'Account settings'}[page]}</button>;})}</section>;})}</nav>
+      <nav aria-label="School modules">{navigation.map(([group,pages])=>{const items=pages.filter(visible);if(!items.length)return null;return <section key={group}><h6>{group}</h6>{items.map(page=>{const Icon=icons[page]||BookOpen;return <button key={page} className={route.page===page?'active':''} aria-current={route.page===page?'page':undefined} onClick={()=>navigate(page)}><Icon size={17}/>{catalog[page]?.label||{dashboard:'Overview',improvement:'Academic improvement',assistant:'School Assistant',reports:'Reports & analytics',audit:'Audit log',settings:'Account settings'}[page]}</button>;})}</section>;})}</nav>
       <div className="sidebar-bottom"><div className="avatar">{user.name[0]}</div><div><b>{user.name}</b><small>{user.role}</small></div><button aria-label="Sign out" onClick={async()=>{try{await api(endpoints.logout,'POST');signOut('You have signed out.');}catch(error){setError(error);}}}><LogOut size={17}/></button></div>
     </aside>
     <main><header><button className="mobile" aria-label="Open navigation" onClick={()=>setNav(true)}><Menu/></button><div className="crumb"><button onClick={()=>navigate('dashboard')}>Workspace</button><ChevronRight size={14}/><b>{title}</b></div><div className="header-right"><span className="live-dot"/><span>School operations</span><span className="divider"/><button onClick={()=>navigate('notices')} aria-label="Open notices"><Bell size={19}/></button><button className="avatar" aria-label="Account settings" onClick={()=>navigate('settings')}>{user.name[0]}</button></div></header>
       <div className="content"><ErrorNotice error={error} onClose={()=>setError(null)}/>
         {config&&allowed?<ResourcePage key={route.page} module={route.page} config={config} api={api} user={user} route={route} navigate={navigate} notify={notify} onMutation={onMutation}/>:
           route.page==='dashboard'?<Dashboard api={api} catalog={catalog} user={user} navigate={navigate} revision={revision}/>:
-          route.page==='reports'?<Reports api={api} catalog={catalog} navigate={navigate} revision={revision}/>:
+          route.page==='improvement'&&['admin','teacher','student','parent'].includes(user.role)?<Improvement api={api} user={user}/>:route.page==='reports'?<Reports api={api} catalog={catalog} navigate={navigate} revision={revision}/>:
           route.page==='audit'&&user.role==='admin'?<Audit api={api} revision={revision}/>:
           route.page==='assistant'?null:
           route.page==='settings'?<SettingsPage api={api} user={user} notify={notify} onSignedOut={signOut}/>:
