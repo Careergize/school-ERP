@@ -1,0 +1,20 @@
+import React,{useState,useEffect} from 'react';
+import {endpoints} from '../../lib/api';
+import {ReferenceSelect,ReferenceLabel} from '../../components/References';
+import {ErrorNotice,Loading} from '../../components/Feedback';
+
+export default function SettingsPage({api,user,notify,onSignedOut}) {
+  const [error,setError]=useState(null),[users,setUsers]=useState([]),[loading,setLoading]=useState(user.role==='admin'),[busy,setBusy]=useState(false),[role,setRole]=useState('teacher'),[link,setLink]=useState('');
+  useEffect(()=>{if(user.role!=='admin')return;const controller=new AbortController();api(endpoints.users,'GET',undefined,{signal:controller.signal}).then(setUsers).catch(error=>{if(error.name!=='AbortError')setError(error);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});return()=>controller.abort();},[api,user.role]);
+  const related={teacher:['staff_id','staff'],student:['student_id','students'],parent:['parent_id','parents']}[role];
+  async function submit(event,type){
+    event.preventDefault();const form=event.currentTarget;setBusy(true);setError(null);
+    try{const body=Object.fromEntries(new FormData(form));if(type==='user'){body.role=role;if(related)body[related[0]]=link?Number(link):null;await api(endpoints.users,'POST',body);setUsers(await api(endpoints.users));form.reset();setLink('');notify('User account created');}else{await api(endpoints.password,'POST',body);onSignedOut('Password changed. Sign in with your new password.');}}
+    catch(error){setError(error);}finally{setBusy(false);}
+  }
+  return <><div className="page-heading"><div><div className="eyebrow">ACCOUNTS / SETTINGS</div><h1>Account settings</h1><p>Manage access to your school workspace.</p></div></div><ErrorNotice error={error}/>
+    <div className="panel settings-panel"><h3>Change password</h3><p>A successful change signs you out on all devices.</p><form onSubmit={event=>submit(event,'password')} className="form-grid"><label>Current password<input name="current" autoComplete="current-password" type="password" required/></label><label>New password<input name="password" autoComplete="new-password" type="password" minLength={12} required/></label><div className="wide"><button className="primary" disabled={busy}>Update password</button></div></form></div>
+    {user.role==='admin'&&<><div className="panel settings-panel"><h3>Create user account</h3><p>Students, parents, and teachers must be linked to an existing record.</p><form onSubmit={event=>submit(event,'user')} className="form-grid"><label>Full name<input name="name" required/></label><label>Email address<input name="email" type="email" autoComplete="off" required/></label><label>Initial password<input name="password" autoComplete="new-password" type="password" minLength={12} required/></label><label>Role<select value={role} onChange={event=>{setRole(event.target.value);setLink('');}}>{['admin','teacher','accountant','librarian','student','parent'].map(value=><option key={value}>{value}</option>)}</select></label>{related&&<div className="form-field wide"><label htmlFor="account-link">Linked {related[1]}</label><ReferenceSelect id="account-link" module={related[1]} value={link} onChange={setLink} required/></div>}<div className="wide"><button className="primary" disabled={busy}>{busy?'Saving…':'Create account'}</button></div></form></div>
+    <div className="panel settings-panel"><h3>User accounts <span className="count">{users.length}</span></h3>{loading?<Loading/>:<div className="table-scroll"><table><thead><tr><th>NAME</th><th>EMAIL</th><th>ROLE</th><th>LINKED RECORD</th></tr></thead><tbody>{users.map(account=><tr key={account.id}><td>{account.name}</td><td>{account.email}</td><td>{account.role}</td><td>{account.student_id?<ReferenceLabel module="students" id={account.student_id}/>:account.staff_id?<ReferenceLabel module="staff" id={account.staff_id}/>:account.parent_id?<ReferenceLabel module="parents" id={account.parent_id}/>:'—'}</td></tr>)}</tbody></table></div>}</div></>}
+  </>;
+}
