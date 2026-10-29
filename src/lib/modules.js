@@ -4,7 +4,7 @@ export const navigation = [
   ['Finance & people', ['fees', 'payments', 'staff', 'payroll', 'reviews']],
   ['Campus services', ['books', 'loans', 'transport', 'transport_allocations', 'hostels', 'hostel_allocations', 'rooms', 'activities']],
   ['Communication', ['notices', 'messages']],
-  ['Insights & settings', ['reports', 'audit', 'school_settings', 'settings']],
+  ['Insights & settings', ['assistant', 'reports', 'audit', 'school_settings', 'settings']],
 ];
 
 export const resourceScreens = {

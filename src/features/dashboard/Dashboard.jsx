@@ -1,9 +1,16 @@
 import React,{useState,useEffect} from 'react';
-import {Users,ClipboardCheck,Wallet,GraduationCap,ArrowUpRight,Bell,Plus,RefreshCw,BookOpen} from 'lucide-react';
+import {Users,ClipboardCheck,Wallet,GraduationCap,ArrowUpRight,Bell,Plus,RefreshCw,BookOpen,CalendarDays,Clock3,Sun} from 'lucide-react';
 import {endpoints} from '../../lib/api';
 import {money} from '../../lib/modules';
 import {ErrorNotice,Loading,EmptyState,StatusBadge} from '../../components/Feedback';
 import {ReferenceLabel} from '../../components/References';
+
+function DashboardClock() {
+  const [now,setNow]=useState(()=>new Date());
+  useEffect(()=>{const timer=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(timer);},[]);
+  const zone={timeZone:'Asia/Kolkata'};
+  return <div className="dashboard-clock"><div className="dashboard-clock-date"><CalendarDays size={15}/><span>{now.toLocaleDateString('en-IN',{...zone,weekday:'long',day:'numeric',month:'long',year:'numeric'})}</span></div><div className="dashboard-clock-time"><Clock3 size={19}/><time dateTime={now.toISOString()}>{now.toLocaleTimeString('en-IN',{...zone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}</time><span className="dashboard-timezone">IST</span></div><div className="dashboard-clock-live"><span/>Live time</div></div>;
+}
 
 export default function Dashboard({api,catalog,user,navigate,revision}) {
   const [summary,setSummary]=useState(null),[students,setStudents]=useState([]),[notices,setNotices]=useState([]),[error,setError]=useState(null),[loading,setLoading]=useState(true),[refresh,setRefresh]=useState(0);
@@ -16,7 +23,7 @@ export default function Dashboard({api,catalog,user,navigate,revision}) {
   const quick=[['students','Add student',Users],['attendance','Take attendance',ClipboardCheck],['fees','Create invoice',Wallet],['notices','Post a notice',Bell]].filter(([module])=>catalog[module]?.can_write);
   const canCreate=module=>catalog[module]?.can_write;
   return <>
-    <div className="page-heading"><div><div className="eyebrow">YOUR SCHOOL, AT A GLANCE</div><h1>Good to see you, {user.name.split(' ')[0]} <span className="wave">✦</span></h1><p>Live updates from your school workspace.</p></div><button className="outline" onClick={()=>setRefresh(value=>value+1)} disabled={loading}><RefreshCw size={15}/>Refresh overview</button></div>
+    <div className="page-heading dashboard-greeting"><div className="dashboard-greeting-copy"><div className="eyebrow"><Sun size={14}/>YOUR SCHOOL, AT A GLANCE</div><h1>Good to see you, <span>{user.name.split(' ')[0]}</span></h1><p>Here’s what’s happening across your school today.</p><button className="outline" onClick={()=>setRefresh(value=>value+1)} disabled={loading}><RefreshCw size={15}/>Refresh overview</button></div><DashboardClock/></div>
     <ErrorNotice error={error}/>
     <div className="banner"><div><span className="banner-tag">CONNECTED CAMPUS</span><h2>More time for what matters.</h2><p>Bring every part of your school together.<br/>Your next great school day starts here.</p><button onClick={()=>navigate(canCreate('admissions')?'admissions':'students')}>Explore your workspace <ArrowUpRight size={16}/></button></div><div className="campus-art"><div className="sun"/><div className="building"><div className="roof">✦</div><div className="windows">▥ ▥ ▥<br/>▥ ▥ ▥</div><div className="door"/></div><div className="tree t1"/><div className="tree t2"/><div className="ground"/></div></div>
     {loading&&!summary?<Loading text="Loading your school overview…"/>:<>
