@@ -1,3 +1,4 @@
+import {DEMO_MODE,createDemoClient} from './demo.js';
 export const endpoints = Object.freeze({
   login:'v1/accounts/login/', me:'v1/accounts/me/', logout:'v1/accounts/logout/',
   password:'v1/accounts/password/', users:'v1/accounts/users/',
@@ -10,6 +11,7 @@ export class ApiError extends Error {
 }
 const baseUrl=(import.meta.env?.VITE_API_BASE_URL||'/api').replace(/\/$/,'');
 export function createApiClient(token,onUnauthorized) {
+  if(DEMO_MODE)return createDemoClient(token);
   async function request(path,method='GET',body,options={}) {
     let response;
     try {

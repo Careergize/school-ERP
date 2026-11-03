@@ -2,6 +2,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Send,X,Plus,Download,FileText,RefreshCw,ChevronLeft,ChevronRight,ShieldCheck,Maximize2} from 'lucide-react';
 import {ErrorNotice,Loading} from '../../components/Feedback';
 import {money} from '../../lib/modules';
+import {DEMO_MODE} from '../../lib/demo';
 import './assistant.css';
 import assistantAvatar from '../../assets/assistant-girl.png';
 
@@ -36,7 +37,7 @@ function Answer({message,api,onUpdate,onReport,onDownload,reportState,onAsk,busy
 }
 
 export default function AssistantPanel({api,user,fullPage=false,navigate}) {
-  const [open,setOpen]=useState(true),[capabilities,setCapabilities]=useState(null),[messages,setMessages]=useState(()=>[saraGreeting()]),[input,setInput]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(null),[conversation,setConversation]=useState(null),[reportStates,setReportStates]=useState({});
+  const [open,setOpen]=useState(!DEMO_MODE),[capabilities,setCapabilities]=useState(null),[messages,setMessages]=useState(()=>[saraGreeting()]),[input,setInput]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(null),[conversation,setConversation]=useState(null),[reportStates,setReportStates]=useState({});
   const bottom=useRef(null),inputRef=useRef(null),generation=useRef(0);
   const sessionKey='school-assistant-conversation-'+user.id;
   useEffect(()=>{const active=++generation.current;const controller=new AbortController();api(root+'capabilities/','GET',undefined,{signal:controller.signal}).then(setCapabilities).catch(error=>{if(error.name!=='AbortError')setError(error);});
@@ -65,7 +66,7 @@ export default function AssistantPanel({api,user,fullPage=false,navigate}) {
   if(!open&&!fullPage)return <button className="assistant-launcher" onClick={()=>setOpen(true)}><Avatar/>Ask Sara</button>;
   return <section className={'assistant-panel '+(fullPage?'assistant-fullpage':'assistant-floating')} aria-label="School data assistant">
     <div className="assistant-header"><div className="assistant-heading-icon"><Avatar/></div><div><h2>Sara</h2><span>Your personalized school assistant</span></div><div className="assistant-header-actions"><button aria-label="Start new conversation" title="New conversation" disabled={busy} onClick={newConversation}><Plus size={19}/></button>{!fullPage&&<button aria-label="Expand assistant" onClick={()=>navigate('assistant')}><Maximize2 size={17}/></button>}{!fullPage&&<button aria-label="Close assistant" onClick={()=>setOpen(false)}><X size={20}/></button>}</div></div>
-    <div className="assistant-privacy"><ShieldCheck size={14}/>{capabilities?`${capabilities.resources.length} permitted modules. `:''}Your questions and records stay on this server.</div>
+    <div className="assistant-privacy"><ShieldCheck size={14}/>{capabilities?`${capabilities.resources.length} permitted modules. `:''}{DEMO_MODE?'Scripted demo answers from sample data in this browser.':'Your questions and records stay on this server.'}</div>
     <ErrorNotice error={error} onClose={()=>setError(null)}/>
     <div className="assistant-history" aria-live="polite">
       {!messages.length&&<div className="assistant-welcome"><div className="assistant-welcome-icon"><Avatar/></div><h3>Ask your school data a question.</h3><p>I can count, filter, summarize, compare periods, and create PDF reports. If a query is unclear or unsupported, I will ask you to clarify.</p><div className="assistant-examples">{(capabilities?.examples||['How many students are currently enrolled?']).map(question=><button key={question} disabled={busy} onClick={()=>send(null,question)}>{question}</button>)}</div></div>}
