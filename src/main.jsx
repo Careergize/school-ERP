@@ -4,7 +4,6 @@ import {GraduationCap,LayoutDashboard,Users,BookOpen,ClipboardCheck,Wallet,Libra
 import './style.css';
 import './theme.css';
 import './features/accounts/login.css';
-import './mobile.css';
 import {createApiClient,endpoints} from './lib/api';
 import {DEMO_MODE,DEMO_SESSION_KEY,resetDemo} from './lib/demo';
 const tokenStorageKey=DEMO_MODE?DEMO_SESSION_KEY:'erp-token';
